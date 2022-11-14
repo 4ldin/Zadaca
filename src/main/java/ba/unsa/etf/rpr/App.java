@@ -10,6 +10,7 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        ExpressionEvaluator x = new ExpressionEvaluator();
+        System.out.println(x.evaluate("( 1 + ( ( 2 + 3 ) * ( 4 * 5 ) ) )"));
     }
 }

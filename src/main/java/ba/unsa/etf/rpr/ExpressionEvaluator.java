@@ -74,7 +74,7 @@ public class ExpressionEvaluator {
             if (isOperator(String.valueOf(expression.charAt(i)))) {
                 if(isOpen) numOfOperInClosedBracketcs.set(currentBracket, numOfOperInClosedBracketcs.get(currentBracket) + 1);
                 operators.push(String.valueOf(expression.charAt(i)));
-                numOfOperators = numOfOperands + 1;
+                numOfOperators = numOfOperators + 1;
             } else if (String.valueOf(expression.charAt(i)).equals(")")) {
                 Integer temp = numOfOperInClosedBracketcs.get(currentBracket);
                 if(!isSqrt) {

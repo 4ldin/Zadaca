@@ -12,6 +12,7 @@ import java.text.DecimalFormat;
 public class App 
 {
     private static String input;
+
     public static void main( String[] args )
     {
        ExpressionEvaluator evaluator = new ExpressionEvaluator();

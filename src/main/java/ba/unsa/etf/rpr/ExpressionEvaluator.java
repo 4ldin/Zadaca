@@ -14,8 +14,8 @@ import java.util.Stack;
 
 public class ExpressionEvaluator {
 
-    private Stack<Double> operands;
-    private Stack<String> operators;
+    private final Stack<Double> operands;
+    private final Stack<String> operators;
 
     /**
      * Constructor that creates an empty object
@@ -57,6 +57,7 @@ public class ExpressionEvaluator {
         throw new RuntimeException("Illegal operator!");
     }
 
+
     /**
      * Class that converts an arithmetic expression (a string of characters) to the value that it represent.
      * @param expression Arithmetic expression that gets converted to wanted value.
@@ -68,10 +69,10 @@ public class ExpressionEvaluator {
         if(expression.charAt(0) != '(') throw new RuntimeException("Expression doesn't start with a left bracket");
         List<Integer> numOfOperInClosedBracketcs = new ArrayList<>();
         int currentBracket = -1, opened = 0, closed = 0;
-        int numOfOperators = 0, numOfOperands = 0;
+        int numOfOperators = 0, numOfOperands = 0, numOfSpaces = 0;
         boolean isOpen = false, isSqrt = false;
         for (int i = 0; i < expression.length(); i++) {
-            if (isOperator(String.valueOf(expression.charAt(i)))) {
+            if (isOperator(String.valueOf(expression.charAt(i))) && String.valueOf(expression.charAt(i+1)).equals(" ")) {
                 if(isOpen) numOfOperInClosedBracketcs.set(currentBracket, numOfOperInClosedBracketcs.get(currentBracket) + 1);
                 operators.push(String.valueOf(expression.charAt(i)));
                 numOfOperators = numOfOperators + 1;
@@ -81,7 +82,7 @@ public class ExpressionEvaluator {
                     while (temp != 0 && operands.size() > 1) {
                         Double a = operands.pop();
                         Double b = operands.pop();
-                        operands.push(applyOperatorToOperands(a, operators.pop(), b));
+                        operands.push(applyOperatorToOperands(b, operators.pop(), a));
                         temp--;
                     }
                     closed = closed + 1;
@@ -105,14 +106,21 @@ public class ExpressionEvaluator {
                 operators.push("sqrt");
                 isSqrt = true;
                 i = i + 4;
-                numOfOperators = numOfOperators + 1;
-            }else if(!String.valueOf(expression.charAt(i)).equals(" ")){
-                operands.push(Double.parseDouble(String.valueOf(expression.charAt(i))));
+                numOfSpaces = numOfSpaces - 2;
+            }else if(!String.valueOf(expression.charAt(i)).equals(" ")) {
+                StringBuilder num = new StringBuilder();
+                while (!String.valueOf(expression.charAt(i)).equals(" ")) {
+                    num.append(expression.charAt(i));
+                    i = i + 1;
+                }
+                operands.push(Double.parseDouble(String.valueOf(num)));
                 numOfOperands = numOfOperands + 1;
             }
+            if(String.valueOf(expression.charAt(i)).equals(" ")) numOfSpaces = numOfSpaces + 1;
         }
         if(numOfOperators != numOfOperands - 1) throw new RuntimeException("Not right amount of operands or operators!");
         if(opened != closed) throw new RuntimeException("Not equal amount of opened and closed brackets!");
+        if(numOfSpaces != numOfOperands + numOfOperators + opened + closed  - 1) throw new RuntimeException("Incorrect spacing!");
         return operands.pop();
     }
 

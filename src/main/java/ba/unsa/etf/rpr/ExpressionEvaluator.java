@@ -77,8 +77,12 @@ public class ExpressionEvaluator {
                 operators.push(String.valueOf(expression.charAt(i)));
                 numOfOperators = numOfOperators + 1;
             } else if (String.valueOf(expression.charAt(i)).equals(")")) {
-                Integer temp = numOfOperInClosedBracketcs.get(currentBracket);
+                if(currentBracket == -1) {
+                    closed = closed + 1;
+                    break;
+                }
                 if(!isSqrt) {
+                    Integer temp = numOfOperInClosedBracketcs.get(currentBracket);
                     while (temp != 0 && operands.size() > 1) {
                         Double a = operands.pop();
                         Double b = operands.pop();

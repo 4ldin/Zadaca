@@ -37,24 +37,22 @@ public class ExpressionEvaluator {
 
     /**
      * Private class that calculates the value of the expression
-     * @param a First operand
-     * @param op Type of operation
-     * @param b Second operand
+     * @param operators Stack of operators
+     * @param operands Stack of operands
      * @return Returns the value of "a op b", throws an exception if "b = 0" or "op" is not a valid operator.
      */
-    private Double applyOperatorToOperands(Double a, String op, Double b){
-        switch (op) {
-            case "+":
-                return a + b;
-            case "-":
-                return a - b;
-            case "*":
-                return a * b;
-            case "/":
-                if (b.equals(0.)) throw new RuntimeException("Division with 0!");
-                return a / b;
+    private Double applyOperatorToOperands(Stack<String> operators, Stack<Double> operands){
+        String op = operators.pop();
+        Double val = operands.pop();
+        if(op.equals("+")) val = operands.pop() + val;
+        else if(op.equals("-")) val = operands.pop() - val;
+        else if(op.equals("*")) val = operands.pop() * val;
+        else if(op.equals("/")) {
+            if(val == 0) throw new RuntimeException("Division with 0 is not allowed!");
+            val = operands.pop() / val;
         }
-        throw new RuntimeException("Illegal operator!");
+        else if(op.equals("sqrt")) val = Math.sqrt(val);
+        return val;
     }
 
 
@@ -67,64 +65,62 @@ public class ExpressionEvaluator {
     public Double evaluate(String expression){
         if(expression.isEmpty()) throw new RuntimeException("Expression is empty!");
         if(expression.charAt(0) != '(') throw new RuntimeException("Expression doesn't start with a left bracket");
-        List<Integer> numOfOperInClosedBracketcs = new ArrayList<>();
         int currentBracket = -1, opened = 0, closed = 0;
-        int numOfOperators = 0, numOfOperands = 0, numOfSpaces = 0;
-        boolean isOpen = false, isSqrt = false;
+        int numOfOperators = 0, numOfOperands = 0, numOfSpaces = 0, numOfSqrt = 0;
+        boolean isSqrt = false, rightAmountOfOperands = true;
+        List<Integer> numOfOperastorsInBracket = new ArrayList<>();
+        List<Integer> numOfOperandsInBracket = new ArrayList<>();
         for (int i = 0; i < expression.length(); i++) {
             if (isOperator(String.valueOf(expression.charAt(i))) && String.valueOf(expression.charAt(i+1)).equals(" ")) {
-                if(isOpen) numOfOperInClosedBracketcs.set(currentBracket, numOfOperInClosedBracketcs.get(currentBracket) + 1);
                 operators.push(String.valueOf(expression.charAt(i)));
+                numOfOperastorsInBracket.set(currentBracket, numOfOperastorsInBracket.get(currentBracket) + 1);
+                if(numOfOperastorsInBracket.get(currentBracket) > 1) throw new RuntimeException("Not right amount of operators in one bracket!");
                 numOfOperators = numOfOperators + 1;
             } else if (String.valueOf(expression.charAt(i)).equals(")")) {
                 if(currentBracket == -1) {
                     closed = closed + 1;
                     break;
                 }
-                if(!isSqrt) {
-                    Integer temp = numOfOperInClosedBracketcs.get(currentBracket);
-                    while (temp != 0 && operands.size() > 1) {
-                        Double a = operands.pop();
-                        Double b = operands.pop();
-                        operands.push(applyOperatorToOperands(b, operators.pop(), a));
-                        temp--;
-                    }
-                    closed = closed + 1;
-                    numOfOperInClosedBracketcs.remove(currentBracket);
-                    currentBracket = currentBracket - 1;
-                }else{
-                    Double a = operands.pop();
-                    operands.push(Math.sqrt(a));
-                    isSqrt = false;
-                    operators.pop();
-                }
+                if(operands.size() > 1) operands.push(applyOperatorToOperands(operators, operands));
+                closed = closed + 1;
+                numOfOperastorsInBracket.set(currentBracket, 0);
+                if((numOfOperandsInBracket.get(currentBracket) == 1 || numOfOperandsInBracket.get(currentBracket) > 2) && !isSqrt) rightAmountOfOperands = false;
+                else if(numOfOperandsInBracket.get(currentBracket) != 1 && isSqrt) rightAmountOfOperands = false;
+                numOfOperandsInBracket.remove(currentBracket);
+                currentBracket = currentBracket - 1;
+                if(currentBracket != -1) numOfOperandsInBracket.set(currentBracket, numOfOperandsInBracket.get(currentBracket) + 1);
+                if(isSqrt) isSqrt = false;
             }
             else if(String.valueOf(expression.charAt(i)).equals("(")){
-                if(!isSqrt) {
-                    isOpen = true;
                     currentBracket = currentBracket + 1;
-                    numOfOperInClosedBracketcs.add(0);
                     opened = opened + 1;
-                }
+                    numOfOperastorsInBracket.add(0);
+                    numOfOperandsInBracket.add(0);
             }else if(expression.startsWith("sqrt", i)){
-                operators.push("sqrt");
                 isSqrt = true;
-                i = i + 4;
-                numOfSpaces = numOfSpaces - 2;
+                operators.push("sqrt");
+                i = i + 3;
+                numOfSqrt = numOfSqrt + 1;
             }else if(!String.valueOf(expression.charAt(i)).equals(" ")) {
+                try{
+                    Double n = Double.parseDouble(String.valueOf(expression.charAt(i)));
+                }catch(NumberFormatException error){
+                    throw new RuntimeException("Input string cannot be parsed!");
+                }
                 StringBuilder num = new StringBuilder();
-                while (!String.valueOf(expression.charAt(i)).equals(" ")) {
-                    num.append(expression.charAt(i));
+                while ((expression.charAt(i) >='0' && expression.charAt(i) <= '9') || expression.charAt(i) =='.') {
+                    if(expression.charAt(i) !='.') num.append(expression.charAt(i));
                     i = i + 1;
                 }
                 operands.push(Double.parseDouble(String.valueOf(num)));
+                numOfOperandsInBracket.set(currentBracket, numOfOperandsInBracket.get(currentBracket) + 1);
                 numOfOperands = numOfOperands + 1;
             }
             if(String.valueOf(expression.charAt(i)).equals(" ")) numOfSpaces = numOfSpaces + 1;
         }
-        if(numOfOperators != numOfOperands - 1) throw new RuntimeException("Not right amount of operands or operators!");
         if(opened != closed) throw new RuntimeException("Not equal amount of opened and closed brackets!");
-        if(numOfSpaces != numOfOperands + numOfOperators + opened + closed  - 1) throw new RuntimeException("Incorrect spacing!");
+        if(numOfSpaces != numOfOperands + numOfOperators + opened + closed + numOfSqrt - 1) throw new RuntimeException("Incorrect spacing!");
+        if(!rightAmountOfOperands) throw new RuntimeException("Not right amount of operands in one bracket!");
         return operands.pop();
     }
 

@@ -1,6 +1,9 @@
 package ba.unsa.etf.rpr;
 
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 /**
  * Java main class that parses the input from the console from the args parameter and performs its validation
  * @author Aldin Islamagic
@@ -22,6 +25,7 @@ public class App
         }catch(RuntimeException e){
             System.out.println(e.getMessage());
         }
+
 
     }
 }

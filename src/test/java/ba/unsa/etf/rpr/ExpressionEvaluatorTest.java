@@ -30,24 +30,21 @@ class ExpressionEvaluatorTest {
      */
     @Test
     void evaluateTest_2(){
-        assertEquals(14, Math.round(new ExpressionEvaluator().evaluate("( 2 + sqrt( 16 ) * ( 6 / sqrt( 4 ) ) )")));
+        assertEquals(48, Math.round(new ExpressionEvaluator().evaluate("( sqrt ( 16 ) * ( 6 / sqrt ( 4 ) ) )")));
+    }
+    @Test
+    void evaluateTest_3(){
+        assertEquals(347, Math.round(new ExpressionEvaluator().evaluate("( sqrt ( 64 ) * ( sqrt ( 2 ) + 4 ) )")));
     }
 
     /**
      * Test using real numbers
      */
     @Test
-    void evaluateTest_3(){
-        assertEquals(7.678,(double) Math.round(new ExpressionEvaluator().evaluate("( 2.356 + 3.439 * ( 5.54 / 3.58 ) )") * 1000) / 1000);
+    void evaluateTest_4(){
+        assertEquals(2357.547,(double) Math.round(new ExpressionEvaluator().evaluate("( 2.356 + ( 5.54 / 3.58 ) )") * 1000) / 1000);
     }
 
-    /**
-     * Test with negative value
-     */
-    @Test
-    void evaluateTest_4(){
-        assertEquals(-1.0,(double) Math.round(new ExpressionEvaluator().evaluate("( -3 + 2 )")));
-    }
 
     /**
      * Testing if every bracket is closed
@@ -63,7 +60,7 @@ class ExpressionEvaluatorTest {
     }
 
     /**
-     * Testing right amount of operators and operands
+     * Testing right amount of operators
      */
     @Test
     void exception_2(){
@@ -76,14 +73,53 @@ class ExpressionEvaluatorTest {
     }
 
     /**
-     * Testing spacing (negative numbers are allowed)
+     * Testing spacing
      */
     @Test
     void exception_3(){
         Assertions.assertThrows(RuntimeException.class, new Executable() {
             @Override
             public void execute() {
-                new ExpressionEvaluator().evaluate("( 3 + 2)");
+                new ExpressionEvaluator().evaluate("( sqrt( 16 ) * ( 6 / sqrt ( 4 ) ) )");
+            }
+        });
+    }
+
+    /**
+     * Testing if there is more operands than allowed
+     */
+    @Test
+    void exception_4(){
+        Assertions.assertThrows(RuntimeException.class, new Executable() {
+            @Override
+            public void execute() {
+                new ExpressionEvaluator().evaluate("( 1 + ( ( 2 + 3 3 ) * ( 4 * 5 ) ) )");
+            }
+        });
+    }
+
+    /**
+     * Checking unknown operators
+     */
+    @Test
+    void exception_5(){
+        Assertions.assertThrows(RuntimeException.class, new Executable() {
+            @Override
+            public void execute() {
+                new ExpressionEvaluator().evaluate("( 1 + ( ( 2 + abs ) * ( 4 * 5 ) ) )");
+            }
+        });
+    }
+
+    /**
+     * Checking if sqrt has more than one operand
+     */
+    @Test
+    void exception_6(){
+        Assertions.assertThrows(RuntimeException.class, new Executable() {
+            @Override
+            public void execute() {
+                new ExpressionEvaluator().evaluate("( sqrt ( 2 + 3) )");
             }
         });
     }
